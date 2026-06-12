@@ -4,6 +4,7 @@ Describe what you want. Cursor SDK agents shop Amazon & AliExpress, compare revi
 
 ## Quick start
 
+
 ```bash
 bun i
 bun run db:push
