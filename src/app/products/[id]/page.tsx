@@ -63,6 +63,9 @@ export default function ProductDetailPage() {
   const selectedCandidate = product.candidates.find(
     (c) => c.id === product.selectedCandidateId,
   );
+  const selectedCartAction = selectedCandidate
+    ? buildCartAction(selectedCandidate.source, selectedCandidate.url)
+    : null;
 
   const pickCandidate = (candidateId: string) => {
     if (product.status === "SELECTED") return;
@@ -133,7 +136,7 @@ export default function ProductDetailPage() {
           </button>
         )}
 
-        {selectedCandidate && (
+        {selectedCandidate && selectedCartAction && (
           <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
             <h2 className="mb-1 text-sm font-medium text-emerald-800">
               Your pick
@@ -142,22 +145,12 @@ export default function ProductDetailPage() {
               {selectedCandidate.title}
             </p>
             <a
-              href={
-                buildCartAction(
-                  selectedCandidate.source as "AMAZON" | "ALIEXPRESS",
-                  selectedCandidate.url,
-                ).url
-              }
+              href={selectedCartAction.url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex min-h-[44px] w-full items-center justify-center rounded-xl bg-emerald-700 text-sm font-semibold text-white hover:bg-emerald-600"
             >
-              {
-                buildCartAction(
-                  selectedCandidate.source as "AMAZON" | "ALIEXPRESS",
-                  selectedCandidate.url,
-                ).buttonLabel
-              }
+              {selectedCartAction.buttonLabel}
             </a>
           </section>
         )}

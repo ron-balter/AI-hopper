@@ -1,5 +1,6 @@
 import type { SDKCustomTool } from "@cursor/sdk";
 
+import { resolveMarketplace } from "~/lib/marketplaces";
 import { db } from "~/server/db";
 import { maybeStartComparison } from "~/server/agents/comparison-dispatcher";
 import { agentEventBus } from "~/server/agents/event-emitter";
@@ -41,7 +42,10 @@ export function buildCustomTools(
       inputSchema: {
         type: "object",
         properties: {
-          source: { type: "string", enum: ["AMAZON", "ALIEXPRESS"] },
+          source: {
+            type: "string",
+            enum: ["AMAZON", "ALIEXPRESS", "EBAY", "SHOPIFY"],
+          },
           title: { type: "string" },
           url: { type: "string" },
           price: { type: "string" },
@@ -57,9 +61,8 @@ export function buildCustomTools(
         required: ["source", "title", "url", "reviewSummary"],
       },
       async execute(args) {
-        const source = str(args.source, "AMAZON").toUpperCase();
-        const marketplace = source === "ALIEXPRESS" ? "ALIEXPRESS" : "AMAZON";
         const url = str(args.url);
+        const marketplace = resolveMarketplace(str(args.source, "AMAZON"), url);
         const title = str(args.title);
 
         const candidate = await db.productCandidate.upsert({

@@ -4,56 +4,73 @@ import { buildCustomTools, recordStreamEvent } from "~/server/agents/tools";
 const MOCK_CANDIDATES = [
   {
     source: "AMAZON" as const,
-    title: "Anker 555 USB-C Hub (8-in-1)",
-    url: "https://www.amazon.com/dp/B09JQ5K4BP",
-    price: "49.99",
+    title: "Osprey Daylite Plus 20L",
+    url: "https://www.amazon.com/dp/B07HCF1Z9H",
+    price: "75.00",
     currency: "USD",
-    rating: 4.6,
-    reviewCount: 12400,
+    rating: 4.7,
+    reviewCount: 4200,
     reviewSummary:
-      "Reliable travel hub with 4K HDMI and 100W pass-through charging. Reviewers praise build quality.",
-    pros: "Compact, stable HDMI output, trusted brand",
-    cons: "Runs warm under heavy load",
+      "Popular daypack with breathable back panel and hydration sleeve. Great for day hikes.",
+    pros: "Lightweight, comfortable hip belt, durable",
+    cons: "Limited organization pockets",
     rank: 1,
   },
   {
-    source: "AMAZON" as const,
-    title: "UGREEN Revodok Pro 209 USB-C Hub",
-    url: "https://www.amazon.com/dp/B0BHNWD9B5",
-    price: "39.99",
+    source: "EBAY" as const,
+    title: "Deuter Speed Lite 21 Backpack — New with Tags",
+    url: "https://www.ebay.com/itm/265489012345",
+    price: "68.50",
     currency: "USD",
-    rating: 4.5,
-    reviewCount: 3200,
+    rating: 4.8,
+    reviewCount: 156,
     reviewSummary:
-      "Strong value pick with dual HDMI and ethernet. Good for desk setups.",
-    pros: "Dual display support, ethernet included",
-    cons: "Larger than pocket-sized hubs",
+      "Seller with 99.2% positive feedback. Same model retails higher elsewhere.",
+    pros: "Below retail, reputable seller",
+    cons: "Limited color options in this listing",
     rank: 2,
   },
   {
     source: "ALIEXPRESS" as const,
-    title: "Baseus 8-in-1 USB-C Hub Adapter",
+    title: "Naturehike 30L Lightweight Hiking Backpack",
     url: "https://www.aliexpress.com/item/1005005123456789.html",
-    price: "22.99",
+    price: "34.99",
     currency: "USD",
-    rating: 4.7,
-    reviewCount: 890,
+    rating: 4.6,
+    reviewCount: 2100,
     reviewSummary:
-      "Budget-friendly with solid reviews for basic travel use. Shipping takes longer.",
-    pros: "Low price, many ports",
-    cons: "Mixed long-term durability reports",
+      "Budget ultralight pack with rain cover included. Solid reviews for weekend trips.",
+    pros: "Low price, includes rain cover",
+    cons: "Longer shipping, thinner straps",
     rank: 3,
+  },
+  {
+    source: "SHOPIFY" as const,
+    title: "Topo Designs Rover Pack Mini",
+    url: "https://topodesigns.com/products/rover-pack-mini",
+    price: "89.00",
+    currency: "USD",
+    rating: 4.5,
+    reviewCount: 320,
+    reviewSummary:
+      "Durable daypack from a DTC outdoor brand. Clean design, made for daily carry and light hikes.",
+    pros: "Quality materials, US brand warranty",
+    cons: "Smaller capacity than 30L options",
+    rank: 4,
   },
 ];
 
 const DEMO_STEPS = [
   { delay: 800, type: "status", label: "Agent initialized — starting product search" },
-  { delay: 1200, type: "task", label: "Delegating to amazon-researcher subagent" },
-  { delay: 2000, type: "tool_call", label: "Searching Amazon for matching products..." },
-  { delay: 1500, type: "thinking", label: "Analyzing Amazon reviews and ratings..." },
-  { delay: 1200, type: "task", label: "Delegating to aliexpress-researcher subagent" },
-  { delay: 1800, type: "tool_call", label: "Searching AliExpress for budget alternatives..." },
-  { delay: 1500, type: "thinking", label: "Comparing value vs. reliability tradeoffs..." },
+  { delay: 1000, type: "task", label: "Delegating to amazon-researcher subagent" },
+  { delay: 1500, type: "tool_call", label: "Searching Amazon for matching products..." },
+  { delay: 1000, type: "task", label: "Delegating to ebay-researcher subagent" },
+  { delay: 1500, type: "tool_call", label: "Searching eBay for new and used listings..." },
+  { delay: 1000, type: "task", label: "Delegating to aliexpress-researcher subagent" },
+  { delay: 1500, type: "tool_call", label: "Searching AliExpress for budget options..." },
+  { delay: 1000, type: "task", label: "Delegating to shopify-researcher subagent" },
+  { delay: 1500, type: "tool_call", label: "Searching Shopify stores for DTC brands..." },
+  { delay: 1200, type: "thinking", label: "Comparing value, shipping, and review quality across marketplaces..." },
   { delay: 1000, type: "assistant", label: "Ranking top candidates for your requirements..." },
 ];
 
@@ -89,23 +106,20 @@ export async function runDemoSearch(productRequestId: string) {
 
   for (const candidate of MOCK_CANDIDATES) {
     await sleep(600);
-    await tools.save_product_candidate!.execute(
-      { ...candidate },
-      {},
-    );
+    await tools.save_product_candidate!.execute({ ...candidate }, {});
   }
 
   await sleep(400);
   await tools.complete_search!.execute(
     {
-      summary: `Found ${MOCK_CANDIDATES.length} strong candidates across Amazon and AliExpress. Review and pick your favorite.`,
+      summary: `Found ${MOCK_CANDIDATES.length} strong candidates across Amazon, eBay, AliExpress, and Shopify. Review and pick your favorite.`,
     },
     {},
   );
 
   await db.productRequest.update({
     where: { id: productRequestId },
-    data: { durationMs: 12000 },
+    data: { durationMs: 18000 },
   });
 
   return { runId, agentId: `agent-demo-${productRequestId.slice(0, 8)}` };

@@ -75,10 +75,11 @@ export function AgentLiveFeed({
   );
 
   const feed = useMemo(() => groupStreamEvents(events ?? []), [events]);
+  const lastFeedLabel = feed[feed.length - 1]?.label;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [feed.length, feed[feed.length - 1]?.label]);
+  }, [feed.length, lastFeedLabel]);
 
   if (!feed.length && !isSearching) return null;
 

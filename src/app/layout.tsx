@@ -8,7 +8,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 export const metadata: Metadata = {
   title: "AI Hopper — Product Search Registry",
   description:
-    "Describe what you want. Cursor agents shop Amazon & AliExpress for you.",
+    "Describe what you want. Cursor agents shop Amazon, AliExpress, eBay & Shopify for you.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

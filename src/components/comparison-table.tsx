@@ -1,6 +1,8 @@
 "use client";
 
 import { buildCartAction } from "~/lib/marketplace-cart";
+import { MarketplaceLogo } from "~/components/marketplace-logo";
+import { marketplaceLabel, parseMarketplace } from "~/lib/marketplaces";
 import type { ComparisonTable } from "~/lib/comparison-types";
 
 type TableCandidate = {
@@ -63,9 +65,15 @@ export function ComparisonTableView({
                   key={row.candidateId}
                   className="min-w-[11rem] px-4 py-3 text-left font-medium text-zinc-900 md:min-w-[14rem] lg:min-w-[16rem]"
                 >
-                  <span className="block text-xs font-normal text-zinc-500">
-                    {row.source === "AMAZON" ? "Amazon" : "AliExpress"}
-                  </span>
+                  <div className="mb-2 flex items-center gap-2">
+                    <MarketplaceLogo
+                      marketplace={row.source}
+                      className="h-7 w-7"
+                    />
+                    <span className="text-xs font-normal text-zinc-500">
+                      {marketplaceLabel(row.source)}
+                    </span>
+                  </div>
                   <span className="block leading-snug">{row.title}</span>
                 </th>
               ))}
@@ -104,7 +112,7 @@ export function ComparisonTableView({
                 }
 
                 const cartAction = buildCartAction(
-                  candidate.source as "AMAZON" | "ALIEXPRESS",
+                  parseMarketplace(candidate.source),
                   candidate.url,
                 );
                 const isSelected = selectedCandidateId === candidate.id;

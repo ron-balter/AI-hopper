@@ -1,0 +1,2 @@
+ALTER TYPE "Marketplace" ADD VALUE 'EBAY';
+ALTER TYPE "Marketplace" ADD VALUE 'SHOPIFY';

@@ -1,6 +1,12 @@
 "use client";
 
 import { buildCartAction } from "~/lib/marketplace-cart";
+import {
+  MARKETPLACE_BADGE_CLASS,
+  marketplaceLabel,
+  parseMarketplace,
+} from "~/lib/marketplaces";
+import { MarketplaceLogo } from "~/components/marketplace-logo";
 import { StatusBadge } from "~/components/status-badge";
 
 type Candidate = {
@@ -32,25 +38,20 @@ export function ProductCandidateCard({
   onPick?: () => void;
   disabled?: boolean;
 }) {
-  const cartAction = buildCartAction(
-    candidate.source as "AMAZON" | "ALIEXPRESS",
-    candidate.url,
-  );
-
-  const sourceColor =
-    candidate.source === "AMAZON"
-      ? "bg-orange-100 text-orange-800"
-      : "bg-red-100 text-red-800";
+  const marketplace = parseMarketplace(candidate.source);
+  const cartAction = buildCartAction(marketplace, candidate.url);
+  const sourceColor = MARKETPLACE_BADGE_CLASS[marketplace];
 
   return (
     <article
       className={`flex h-full flex-col rounded-2xl border p-4 ${selected ? "border-emerald-500 bg-emerald-50/50" : "border-zinc-200 bg-white"}`}
     >
       <div className="mb-3 flex flex-wrap items-center gap-2">
+        <MarketplaceLogo marketplace={marketplace} className="h-9 w-9" />
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-medium ${sourceColor}`}
         >
-          {candidate.source === "AMAZON" ? "Amazon" : "AliExpress"}
+          {marketplaceLabel(candidate.source)}
         </span>
         {candidate.rank != null && (
           <span className="text-xs text-zinc-500">#{candidate.rank}</span>
@@ -100,7 +101,7 @@ export function ProductCandidateCard({
         >
           View listing
         </a>
-        {(onPick || selected) && (
+        {(onPick != null || selected) && (
           <a
             href={disabled ? undefined : cartAction.url}
             target="_blank"

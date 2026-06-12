@@ -27,6 +27,8 @@ enum ComparisonStatus {
 enum Marketplace {
     AMAZON
     ALIEXPRESS
+    EBAY
+    SHOPIFY
 }
 
 model ProductRequest {
