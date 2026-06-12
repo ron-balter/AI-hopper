@@ -5,10 +5,8 @@ import { Agent, CursorAgentError } from "@cursor/sdk";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import { runDemoSearch } from "~/server/agents/demo-simulator";
-import {
-  buildCustomTools,
-  recordStreamEvent,
-} from "~/server/agents/tools";
+import { persistAgentStream } from "~/server/agents/stream-events";
+import { buildCustomTools } from "~/server/agents/tools";
 import {
   buildResumePrompt,
   buildSearchPrompt,
@@ -21,52 +19,6 @@ type ActiveSearch = {
 };
 
 const activeSearches = new Map<string, ActiveSearch>();
-
-function streamEventLabel(event: {
-  type: string;
-  name?: string;
-  status?: string;
-  text?: string;
-  message?: { content?: Array<{ type: string; text?: string }> };
-  [key: string]: unknown;
-}): string {
-  if (event.type === "tool_call") {
-    return `[tool] ${event.name ?? "unknown"} (${event.status ?? "running"})`;
-  }
-  if (event.type === "thinking" && event.text) {
-    return event.text.slice(0, 120);
-  }
-  if (event.type === "assistant" && event.message?.content) {
-    const text = event.message.content
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join(" ");
-    return text.slice(0, 160) || "Assistant response";
-  }
-  if (event.type === "status") {
-    return `Status: ${event.status ?? "update"}`;
-  }
-  if (event.type === "task" && event.text) {
-    return event.text;
-  }
-  return `${event.type} event`;
-}
-
-async function persistStreamEvents(
-  productRequestId: string,
-  runId: string,
-  stream: AsyncIterable<{ type: string }>,
-) {
-  for await (const event of stream) {
-    const label = streamEventLabel(event);
-    if (!label) continue;
-    await recordStreamEvent(productRequestId, runId, {
-      type: event.type,
-      label,
-      payload: event,
-    });
-  }
-}
 
 async function runLiveSearch(productRequestId: string, isResume: boolean) {
   const request = await db.productRequest.findUniqueOrThrow({
@@ -145,7 +97,7 @@ async function runLiveSearch(productRequestId: string, isResume: boolean) {
       },
     });
 
-    const streamPromise = persistStreamEvents(
+    const streamPromise = persistAgentStream(
       productRequestId,
       runId,
       run.stream(),

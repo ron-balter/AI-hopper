@@ -7,6 +7,7 @@ import { db } from "~/server/db";
 import { buildComparisonPrompt } from "~/server/agents/comparison-prompts";
 import { buildComparisonTools } from "~/server/agents/comparison-tools";
 import type { ComparisonTable } from "~/lib/comparison-types";
+import { persistAgentStream } from "~/server/agents/stream-events";
 import { recordStreamEvent } from "~/server/agents/tools";
 
 const MIN_CANDIDATES_FOR_COMPARISON = 2;
@@ -180,18 +181,7 @@ async function runLiveComparison(productRequestId: string) {
     const run = await agent.send(prompt);
     const runId = run.id;
 
-    for await (const event of run.stream()) {
-      const label =
-        event.type === "tool_call"
-          ? `[compare] ${"name" in event ? String(event.name) : "tool"}`
-          : event.type === "assistant"
-            ? "Comparison agent writing table…"
-            : `Comparison: ${event.type}`;
-      await recordStreamEvent(productRequestId, runId, {
-        type: event.type,
-        label,
-      });
-    }
+    await persistAgentStream(productRequestId, runId, run.stream());
 
     const result = await run.wait();
 

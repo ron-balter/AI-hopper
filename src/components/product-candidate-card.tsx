@@ -1,5 +1,6 @@
 "use client";
 
+import { buildCartAction } from "~/lib/marketplace-cart";
 import { StatusBadge } from "~/components/status-badge";
 
 type Candidate = {
@@ -17,17 +18,25 @@ type Candidate = {
   rank: number | null;
 };
 
+const cartLinkClass =
+  "flex min-h-[44px] flex-1 items-center justify-center rounded-xl px-4 text-sm font-medium text-white";
+
 export function ProductCandidateCard({
   candidate,
   selected,
-  onSelect,
+  onPick,
   disabled,
 }: {
   candidate: Candidate;
   selected?: boolean;
-  onSelect?: () => void;
+  onPick?: () => void;
   disabled?: boolean;
 }) {
+  const cartAction = buildCartAction(
+    candidate.source as "AMAZON" | "ALIEXPRESS",
+    candidate.url,
+  );
+
   const sourceColor =
     candidate.source === "AMAZON"
       ? "bg-orange-100 text-orange-800"
@@ -35,7 +44,7 @@ export function ProductCandidateCard({
 
   return (
     <article
-      className={`rounded-2xl border p-4 ${selected ? "border-emerald-500 bg-emerald-50/50" : "border-zinc-200 bg-white"}`}
+      className={`flex h-full flex-col rounded-2xl border p-4 ${selected ? "border-emerald-500 bg-emerald-50/50" : "border-zinc-200 bg-white"}`}
     >
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span
@@ -82,7 +91,7 @@ export function ProductCandidateCard({
         </p>
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="mt-auto flex flex-col gap-2 pt-4 sm:flex-row">
         <a
           href={candidate.url}
           target="_blank"
@@ -91,15 +100,30 @@ export function ProductCandidateCard({
         >
           View listing
         </a>
-        {onSelect && (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onSelect}
-            className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-zinc-900 px-4 text-sm font-medium text-white disabled:opacity-50"
+        {(onPick || selected) && (
+          <a
+            href={disabled ? undefined : cartAction.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={cartAction.hint}
+            aria-disabled={disabled}
+            onClick={(e) => {
+              if (disabled) {
+                e.preventDefault();
+                return;
+              }
+              onPick?.();
+            }}
+            className={`${cartLinkClass} ${
+              selected
+                ? "bg-emerald-700 hover:bg-emerald-600"
+                : "bg-zinc-900 hover:bg-zinc-800"
+            } ${disabled ? "pointer-events-none opacity-50" : ""}`}
           >
-            Select this
-          </button>
+            {onPick
+              ? cartAction.buttonLabel
+              : `${cartAction.buttonLabel} again`}
+          </a>
         )}
       </div>
     </article>

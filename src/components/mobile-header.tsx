@@ -6,15 +6,19 @@ import { ActiveAgentsBadge } from "~/components/active-agents-badge";
 export function MobileHeader({
   title,
   backHref,
+  wide = false,
 }: {
   title: string;
   backHref?: string;
+  wide?: boolean;
 }) {
   const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+      <div
+        className={`mx-auto flex items-center justify-between gap-3 px-4 py-3 md:px-6 ${wide ? "max-w-7xl" : "max-w-2xl"}`}
+      >
         <div className="flex min-w-0 items-center gap-2">
           {backHref ? (
             <Link

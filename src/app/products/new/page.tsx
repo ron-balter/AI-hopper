@@ -4,22 +4,26 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { MobileHeader } from "~/components/mobile-header";
+import { pickRandomRequestExample } from "~/lib/request-examples";
 import { api } from "~/trpc/react";
 
 export default function NewProductPage() {
   const router = useRouter();
   const utils = api.useUtils();
 
-  const [title, setTitle] = useState("USB-C hub with 4K HDMI");
-  const [description, setDescription] = useState(
-    "Compact travel hub with 4K HDMI, 100W pass-through charging, and at least 2 USB-A ports.",
-  );
-  const [rationale, setRationale] = useState(
-    "I travel for work and need one adapter for hotel monitors and charging my laptop.",
-  );
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [rationale, setRationale] = useState("");
 
   const create = api.product.create.useMutation();
   const startSearch = api.product.startSearch.useMutation();
+
+  const fillRandomExample = () => {
+    const example = pickRandomRequestExample();
+    setTitle(example.title);
+    setDescription(example.description);
+    setRationale(example.rationale);
+  };
 
   const submit = async (andSearch: boolean) => {
     const product = await create.mutateAsync({ title, description, rationale });
@@ -44,6 +48,14 @@ export default function NewProductPage() {
             void submit(false);
           }}
         >
+          <button
+            type="button"
+            onClick={fillRandomExample}
+            className="min-h-[44px] w-full rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:bg-zinc-100"
+          >
+            Fill random example
+          </button>
+
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-zinc-700">
               Title
@@ -51,6 +63,7 @@ export default function NewProductPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              placeholder="Short name for what you're looking for"
               className="min-h-[48px] w-full rounded-xl border border-zinc-300 px-4 text-base"
               required
             />
@@ -64,6 +77,7 @@ export default function NewProductPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
+              placeholder="Specs, size, budget, materials — be as specific as you like"
               className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-base"
               required
             />
@@ -77,6 +91,7 @@ export default function NewProductPage() {
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
               rows={3}
+              placeholder="How you'll use it and what problem it solves"
               className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-base"
               required
             />
