@@ -4,6 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
+    DIRECT_URL: z.string().optional(),
     CURSOR_API_KEY: z.string().min(1),
     DEMO_MODE: z
       .string()
@@ -18,6 +19,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
     CURSOR_API_KEY: process.env.CURSOR_API_KEY,
     DEMO_MODE: process.env.DEMO_MODE,
     NODE_ENV: process.env.NODE_ENV,
