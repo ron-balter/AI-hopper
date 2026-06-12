@@ -6,6 +6,10 @@ import { env } from "~/env";
 import { db } from "~/server/db";
 import { runDemoSearch } from "~/server/agents/demo-simulator";
 import { persistAgentStream } from "~/server/agents/stream-events";
+import {
+  buildLocalAgentOptions,
+  getLocalAgentStore,
+} from "~/server/agents/local-sdk";
 import { buildCustomTools } from "~/server/agents/tools";
 import {
   buildResumePrompt,
@@ -58,14 +62,15 @@ async function runLiveSearch(productRequestId: string, isResume: boolean) {
   let agent: Awaited<ReturnType<typeof Agent.create>> | null = null;
 
   try {
+    const local = await buildLocalAgentOptions({
+      customTools: buildCustomTools(productRequestId),
+    });
+
     if (isResume && request.agentId) {
       agent = await Agent.resume(request.agentId, {
         apiKey: env.CURSOR_API_KEY,
         model: { id: "composer-2.5" },
-        local: {
-          cwd: process.cwd(),
-          customTools: buildCustomTools(productRequestId),
-        },
+        local,
         agents: subagentDefinitions,
       });
     } else {
@@ -73,10 +78,7 @@ async function runLiveSearch(productRequestId: string, isResume: boolean) {
         apiKey: env.CURSOR_API_KEY,
         name: `product-shopper-${productRequestId.slice(0, 8)}`,
         model: { id: "composer-2.5" },
-        local: {
-          cwd: process.cwd(),
-          customTools: buildCustomTools(productRequestId),
-        },
+        local,
         agents: subagentDefinitions,
       });
 
@@ -171,10 +173,12 @@ export function getActiveSearchCount() {
 
 export async function getSdkActiveAgentCount() {
   try {
+    const store = await getLocalAgentStore();
     const { items } = await Agent.list({
       runtime: "local",
       cwd: process.cwd(),
       limit: 50,
+      ...(store ? { store } : {}),
     });
     return items.filter((a) => a.status === "running").length;
   } catch {

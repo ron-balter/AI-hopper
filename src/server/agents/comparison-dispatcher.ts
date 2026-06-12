@@ -4,6 +4,7 @@ import { Agent, CursorAgentError } from "@cursor/sdk";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { buildLocalAgentOptions } from "~/server/agents/local-sdk";
 import { buildComparisonPrompt } from "~/server/agents/comparison-prompts";
 import { buildComparisonTools } from "~/server/agents/comparison-tools";
 import type { ComparisonTable } from "~/lib/comparison-types";
@@ -163,14 +164,15 @@ async function runLiveComparison(productRequestId: string) {
   let agent: Awaited<ReturnType<typeof Agent.create>> | null = null;
 
   try {
+    const local = await buildLocalAgentOptions({
+      customTools: buildComparisonTools(productRequestId),
+    });
+
     agent = await Agent.create({
       apiKey: env.CURSOR_API_KEY,
       name: `product-compare-${productRequestId.slice(0, 8)}`,
       model: { id: "composer-2.5" },
-      local: {
-        cwd: process.cwd(),
-        customTools: buildComparisonTools(productRequestId),
-      },
+      local,
     });
 
     await db.productRequest.update({
