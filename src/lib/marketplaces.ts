@@ -21,6 +21,13 @@ export const MARKETPLACE_AGENTS: Record<Marketplace, string> = {
   SHOPIFY: "shopify-researcher",
 };
 
+export const MARKETPLACE_LOGOS: Record<Marketplace, string> = {
+  AMAZON: "/amazon_logo.png",
+  ALIEXPRESS: "/aliexpress-logo.png",
+  EBAY: "/ebay-logo.png",
+  SHOPIFY: "/shopify_logo.png",
+};
+
 export const MARKETPLACE_BADGE_CLASS: Record<Marketplace, string> = {
   AMAZON: "bg-orange-100 text-orange-800",
   ALIEXPRESS: "bg-red-100 text-red-800",
